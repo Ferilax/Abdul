@@ -332,6 +332,7 @@ audio {
 }
 .player__audioname {
   margin-bottom: 0.5rem;
+  border: 1px solid #000;
 }
 .player__progress-container {
   align-self: flex-end;
@@ -355,4 +356,16 @@ audio {
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
-}/*# sourceMappingURL=style.css.map */
+}
+.player__volume-container {
+  height: 1rem;
+  width: 20rem;
+  background-color: #6495ED;
+  z-index: 2;
+  position: relative;
+}
+.player__volume {
+  width: 50%;
+  height: 100%;
+  background-color: #22223b;
+}

@@ -8,38 +8,48 @@ const playerAudio = document.querySelector('.player__audio'),
 		playBtn = document.querySelector('.player__play-pause'),
 		prevBtn = document.querySelector('.prev'),
 		nextBtn = document.querySelector('.next'),
-		audio = document.querySelector('.audio'),
+		audio = document.querySelectorAll('audio'),
 		subTitle = document.querySelector('.player__subtitle'),
 		title = document.querySelector('.player__title'),
 		progressContainer = document.querySelector('.player__progress-container'),
 		progress = document.querySelector('.player__progress'),
-		imgSrc = document.querySelector('.resume')
+		volumeContainer = document.querySelector('.player__volume-container'),
+		volumeSelect = document.querySelector('.player__volume'),
+		imgSrc = document.querySelector('.resume'),
+		playerUl = document.querySelector('.player__ul')
 
-
-// Name
-const songs = ['fdfdfd', 'footsteps-shoes-stomp-leaves-pile_fjgebp4u']
-
+const allList = playerUl.querySelectorAll('.player__li');
 let songIndex = 0;
+
+for (let i = 0; i < allList.length; i++) {
+	allList[i].addEventListener('click', function(e) {
+		pauseSong(0);
+		
+		songIndex = i;
+		playSong();
+	});
+};
 
 // Init
 function loadSong(song) {
-	title.innerHTML = song;
-	audio.src = `audio/${song}.mp3`; 
-	
+	title.innerHTML = song.querySelector('.player__audioname').innerHTML;
+	subTitle.innerHTML = song.querySelector('.player__author').innerHTML;
 }
-loadSong(songs[songIndex]);
+loadSong(allList[songIndex]);
 
 // Play
 function playSong() {
+	loadSong(allList[songIndex]);
 	playerAudio.classList.add('play');
-	audio.play();
+	allList[songIndex].querySelector('audio').play();
 	imgSrc.src = './img/button-stop.png';
 }
 // Pause
-function pauseSong() {
+function pauseSong(zero = allList[songIndex].querySelector('audio').currentTime) {
 	playerAudio.classList.remove('play');
-	audio.pause();
+	allList[songIndex].querySelector('audio').pause();
 	imgSrc.src = './img/button-resume.png';
+	allList[songIndex].querySelector('audio').currentTime = zero;
 }
 
 playBtn.addEventListener('click', () => {
@@ -53,26 +63,29 @@ playBtn.addEventListener('click', () => {
 
 // Next song
 function nextSong() {
+	pauseSong(0);
+	loadSong(allList[songIndex]);
+	
 	songIndex++;
 
-	if (songIndex > songs.length - 1) {
+	if (songIndex > allList.length - 1) {
 		songIndex = 0;
 	}
 
-	loadSong(songs[songIndex]);
 	playSong();
 }
 nextBtn.addEventListener('click', nextSong);
 
 // Prev song
 function prevSong() {
+	pauseSong(0);
+	loadSong(allList[songIndex]);
 	songIndex--;
 
 	if (songIndex < 0) {
-		songIndex = songs.length - 1;
+		songIndex = allList.length - 1;
 	}
 
-	loadSong(songs[songIndex]);
 	playSong();
 }
 prevBtn.addEventListener('click', prevSong);
@@ -83,17 +96,54 @@ function updateProgress(e) {
 	const progressPercent = ( currentTime / duration ) * 100;
 	progress.style.width = `${progressPercent}%`;
 }
-audio.addEventListener('timeupdate', updateProgress);
+for (let i = 0; i < allList.length; i++) {
+	allList[i].querySelector('audio').addEventListener('timeupdate', updateProgress);
+}
 
 // Set progress
 function setProgress (e) {
 	const width = this.clientWidth;
 	const clickX = e.offsetX;
-	const duration = audio.duration;
+	const duration = allList[songIndex].querySelector('audio').duration;
 
-	audio.currentTime = (clickX / width) * duration;
+	allList[songIndex].querySelector('audio').currentTime = (clickX / width) * duration;
 }
-progressContainer.addEventListener('click', setProgress);
+progressContainer.addEventListener('mousedown', function () {
+	progressContainer.addEventListener('mousemove', setProgress);
+});
+progressContainer.addEventListener('mouseup', function () {
+	progressContainer.removeEventListener('mousemove', setProgress);
+})
+progressContainer.addEventListener('mouseleave', function () {
+	progressContainer.removeEventListener('mousemove', setProgress);
+})
+progressContainer.addEventListener('mousedown', setProgress);
+
+// Set Volume
+function setVolume (e) {
+	const width = this.clientWidth;
+	const clickX = e.offsetX;
+
+	console.log(width, clickX)
+
+	for (let key of audio) {
+		key.volume = (clickX / width);
+	}
+	volumeSelect.style.width = `${(clickX / width) * 100}%`;
+	console.log(allList[songIndex].querySelector('audio').volume);
+}
+
+volumeContainer.addEventListener('mousedown', function() {
+	volumeContainer.addEventListener('mousemove', setVolume);
+});
+volumeContainer.addEventListener('mouseup', function() {
+	volumeContainer.removeEventListener('mousemove', setVolume);
+})
+volumeContainer.addEventListener('mouseleave', function() {
+	volumeContainer.removeEventListener('mousemove', setVolume);
+})
+volumeContainer.addEventListener('mousedown', setVolume);
+
 
 // Autoplay
-audio.addEventListener('ended', nextSong);
+allList[songIndex].querySelector('audio').addEventListener('ended', nextSong);
